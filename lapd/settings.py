@@ -38,12 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'lapd',
+    'widget_tweaks',
     'allauth',
-    'allauth.account',
-    "widget_tweaks",
-    "slippers",
-    "django_extensions"
+    "django_extensions",
+    'lapd'
+
 ]
 
 MIDDLEWARE = [
@@ -86,7 +85,7 @@ WSGI_APPLICATION = 'lapd.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'crimesdb',
+        'NAME': 'lapdDB',
         'USER': 'postgres',
         'PASSWORD': 'admin',
         'HOST': 'localhost',
