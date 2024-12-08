@@ -3,45 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% include 'base/css.html'%}
+    {% include 'base/css.html' %}
     <title>Crime Database</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal">
 
     {% include 'base/js.html' %}
-    {% include 'nav/navbar.html'%}
-    <!-- Header -->
-    <header class="bg-blue-600 text-white shadow-lg">
-    </header>
+    {% include 'nav/navbar.html' %}
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-6">
-        <!-- Search Bar -->
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-semibold text-gray-700">Crime Records</h2>
-            <div class="flex">
-                <input type="text" placeholder="Search by keyword..." 
-                       class="border border-gray-300 rounded-l px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <button class="bg-blue-600 text-white px-4 py-2 rounded-r hover:bg-blue-700">Search</button>
-            </div>
-        </div>
+        <h2 class="text-2xl font-semibold text-gray-700 mb-6">Crime Records</h2>
 
-        <!-- Crime Records Table -->
+        <!-- Query Selection Menu -->
+        <form method="get" class="flex flex-wrap gap-4 mb-8">
+            <!-- Query Type Dropdown -->
+            <select name="query_type" id="query_type"
+                    class="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select a Query</option>
+                <option value="total_reports_per_crmcd">1. Total Reports per Crm Cd</option>
+                <option value="total_reports_per_day">2. Total Reports per Day for Crm Cd</option>
+                <option value="most_common_crime_per_area">3. Most Common Crime per Area</option>
+                <option value="average_crimes_per_hour">4. Average Crimes per Hour</option>
+                <option value="common_crmcd_in_bounding_box">5. Common Crm Cd in Bounding Box</option>
+                <option value="top5_areas_by_crimes_a">6a. Top-5 Areas by Crimes - Area Name</option>
+                <option value="top5_areas_by_crimes_b">6b. Top-5 Areas by Crimes - Rept Dist No</option>
+                <option value="co_occurred_crimes">7. Co-Occurred Crimes in Top Area</option>
+                <option value="second_most_common_cooccurred_crime">8. Second Most Common Co-Occurred Crime</option>
+                <option value="common_weapon_by_age_group">9. Common Weapon by Age Group</option>
+                <option value="longest_time_without_crime">10. Longest Time Without Crime</option>
+                <option value="areas_with_two_crimes">11. Areas with Two Crimes on the Same Day</option>
+                <option value="divisions_with_same_weapon">12. Divisions with Same Weapon</option>
+                <option value="crimes_occurred_n_times">13. Crimes Occurred N Times</option>
+            </select>
+
+            <!-- Date Filters -->
+            <input type="date" name="start_date" id="start_date" value="{{ request.GET.start_date }}"
+                   class="border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="date" name="end_date" id="end_date" value="{{ request.GET.end_date }}"
+                   class="border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+            <!-- Crime Code Filter -->
+            <select name="crm_cd" id="crm_cd"
+                    class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Crime Codes</option>
+                {% for code in crime_codes %}
+                    <option value="{{ code }}" {% if request.GET.crm_cd == code %}selected{% endif %}>{{ code }}</option>
+                {% endfor %}
+            </select>
+            <select name="crm_cd2" id="crm_cd2"
+                    class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Crime Names</option>
+                {% for desc in crime_desc %}
+                    <option value="{{ desc }}" {% if request.GET.crm_cd2 == desc %}selected{% endif %}>{{ desc }}</option>
+                {% endfor %}
+            </select>
+            <select name="crm_cd3" id="crm_cd3"
+                    class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Crime Names</option>
+                {% for desc in crime_desc %}
+                    <option value="{{ desc }}" {% if request.GET.crm_cd3 == desc %}selected{% endif %}>{{ desc }}</option>
+                {% endfor %}
+            </select>
+            
+
+            <!-- Bounding Box Filters (Latitude and Longitude) -->
+            <input type="text" name="lat_min" id="lat_min" placeholder="Lat Min"
+                   class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" name="lat_max" id="lat_max" placeholder="Lat Max"
+                   class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" name="lng_min" id="lng_min" placeholder="Lng Min"
+                   class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" name="lng_max" id="lng_max" placeholder="Lng Max"
+                   class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+            <!-- N Filter -->
+            <input type="number" name="n_times" id="n_times" placeholder="Enter N"
+                   class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <!-- Start Time Filter -->
+            <input type="time" name="start_time" id="start_time" value="{{ request.GET.start_time }}"
+                   class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+            <!-- End Time Filter -->
+            <input type="time" name="end_time" id="end_time" value="{{ request.GET.end_time }}"
+                   class="hidden border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+            <!-- Submit Button -->
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Run Query</button>
+        </form>
+
+        <!-- Results Table -->
         <div class="overflow-x-auto bg-white shadow-md rounded">
             <table class="min-w-full bg-white border border-gray-200">
                 <thead>
                     <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                        <th class="py-3 px-6 text-left">Case ID</th>
-                        <th class="py-3 px-6 text-left">Crime Type</th>
-                        <th class="py-3 px-6 text-center">Location</th>
-                        <th class="py-3 px-6 text-center">Date</th>
-                        <th class="py-3 px-6 text-center">Status</th>
-                        <th class="py-3 px-6 text-center">Actions</th>
-                        <th class="py-3 px-6 text-center">{% block content %}whatever{% endblock content %}</th>
-
+                        {% for header in table_headers %}
+                            <th class="py-3 px-6 text-left">{{ header }}</th>
+                        {% endfor %}
                     </tr>
                 </thead>
                 <tbody class="text-gray-700 text-sm font-light">
-                    <!-- Example Row -->
-            
+                    {% for row in table_data %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            {% for cell in row %}
+                                <td class="py-3 px-6 text-left whitespace-nowrap">{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="{{ table_headers|length }}" class="py-3 px-6 text-center">No data found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- JavaScript for Conditional Filters -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const queryTypeSelector = document.getElementById('query_type');
+            const crimeCodeFilter = document.getElementById('crm_cd');
+            const crimeCodeFilter2 = document.getElementById('crm_cd2');
+            const crimeCodeFilter3 = document.getElementById('crm_cd3');
+            const boundingBoxFilters = ['lat_min', 'lat_max', 'lng_min', 'lng_max'].map(id => document.getElementById(id));
+            const nTimesFilter = document.getElementById('n_times');
+            const startTimeFilter = document.getElementById('start_time');
+            const endTimeFilter = document.getElementById('end_time');
+            const startDateFilter = document.getElementById('start_date');
+            const endDateFilter = document.getElementById('end_date');
+            function toggleFilters() {
+                const selectedQuery = queryTypeSelector.value;
+                if(['total_reports_per_crmcd','second_most_common_cooccurred_crime','co_occurred_crimes','most_common_crime_per_area','average_crimes_per_hour','common_crmcd_in_bounding_box','top5_areas_by_crimes_a','top5_areas_by_crimes_b'].includes(selectedQuery)) {//add date range
+                    startDateFilter.classList.remove('hidden');
+                    endDateFilter.classList.remove('hidden');
+                }else{
+                    startDateFilter.classList.add('hidden');
+                    endDateFilter.classList.add('hidden');
+                }
+                // Show Crime Code filter for specific queries
+                if (['total_reports_per_day','longest_time_without_crime','second_most_common_cooccurred_crime'].includes(selectedQuery)) {
+                    crimeCodeFilter.classList.remove('hidden');
+                } else {
+                    crimeCodeFilter.classList.add('hidden');
+                }
+                if(selectedQuery === 'areas_with_two_crimes'){
+                    crimeCodeFilter2.classList.remove('hidden');
+                    crimeCodeFilter3.classList.remove('hidden');
+                }
+                else{
+                    crimeCodeFilter2.classList.add('hidden');
+                    crimeCodeFilter3.classList.add('hidden');
+                }
+                if(['total_reports_per_day','divisions_with_same_weapon'].includes(selectedQuery)) {
+                    startTimeFilter.classList.remove('hidden');
+                    endTimeFilter.classList.remove('hidden');
+                }
+                else{
+                    startTimeFilter.classList.add('hidden');
+                    endTimeFilter.classList.add('hidden');
+                }
+
+                // Show Bounding Box filters for specific query
+                if (selectedQuery === 'common_crmcd_in_bounding_box') {
+                    boundingBoxFilters.forEach(el => el.classList.remove('hidden'));
+                } else {
+                    boundingBoxFilters.forEach(el => el.classList.add('hidden'));
+                }
+
+                // Show N filter for specific query
+                if (selectedQuery === 'crimes_occurred_n_times') {
+                    nTimesFilter.classList.remove('hidden');
+                } else {
+                    nTimesFilter.classList.add('hidden');
+                }
+            }
+
+            // Initialize visibility on page load
+            toggleFilters();
+
+            // Update visibility when the query type changes
+            queryTypeSelector.addEventListener('change', toggleFilters);
+        });
+    </script>
+</body>
+</html>

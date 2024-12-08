@@ -17,7 +17,7 @@ Including another URLconf
 from django.conf.urls.i18n import urlpatterns
 
 from auth.views import login_view
-from .views import home_page_view
+from .views import home_page_view, crime_database_view
 from django.contrib import admin
 from django.urls import path, include
 from auth import views as auth_views
@@ -27,7 +27,7 @@ from . import views
 #]
 
 urlpatterns=[
-    path("home/",home_page_view,name="home"),
+    path("home/",crime_database_view,name="home"),
     path("login/",login_view),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),  # new
