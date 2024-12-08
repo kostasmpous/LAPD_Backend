@@ -46,6 +46,7 @@ def crime_database_view(request):
     lat_max = request.GET.get('lat_max')
     lng_min = request.GET.get('lng_min')
     lng_max = request.GET.get('lng_max')
+    n = request.GET.get('n_times')
 
     table_headers = []
     table_data = []
@@ -342,6 +343,36 @@ def crime_database_view(request):
         with connection.cursor() as cursor:
             cursor.execute(query, [start_time,end_time])
             table_data = cursor.fetchall()
+    elif query_type == 'crimes_occurred_n_times':
+        query ="""
+            SELECT
+          dr_no,
+          "Area_Name",
+          "Description",
+          weapon_description
+        FROM
+          "Cases" JOIN "Areas" ON "Cases"."Area_code" = "Areas"."Area_Code"
+        JOIN
+          "Cases_Crime_Codes" ON "Cases".dr_no = "Cases_Crime_Codes"."DR_NO_id"
+        JOIN "Crimes_Codes" ON "Cases_Crime_Codes"."CrimeCode_id" = "Crimes_Codes"."Crime_Code"
+        JOIN "Cases_weapons" ON "Cases".dr_no = "Cases_weapons".cases_id
+        JOIN
+          "Weapons" ON "Cases_weapons".weapons_id = "Weapons".weapon_cd
+        WHERE
+          "Date_Occ" BETWEEN %s AND %s -- replace with actual date range
+        GROUP BY
+          dr_no,
+          "Area_Name",
+          "Description",
+          weapon_description
+        HAVING
+          COUNT(*) = %s
+        """
+        table_headers = ['dr_no','Area_Name','Description','Weapon']
+        with connection.cursor() as cursor:
+            cursor.execute(query, [start_date,end_date,n])
+            table_data = cursor.fetchall()
+
     return render(request, 'Base.html', {
         'table_headers': table_headers,
         'table_data': table_data,

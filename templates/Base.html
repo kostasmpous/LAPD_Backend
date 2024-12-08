@@ -135,7 +135,7 @@
             const endDateFilter = document.getElementById('end_date');
             function toggleFilters() {
                 const selectedQuery = queryTypeSelector.value;
-                if(['total_reports_per_crmcd','second_most_common_cooccurred_crime','co_occurred_crimes','most_common_crime_per_area','average_crimes_per_hour','common_crmcd_in_bounding_box','top5_areas_by_crimes_a','top5_areas_by_crimes_b'].includes(selectedQuery)) {//add date range
+                if(['total_reports_per_crmcd','second_most_common_cooccurred_crime','crimes_occurred_n_times','co_occurred_crimes','most_common_crime_per_area','average_crimes_per_hour','common_crmcd_in_bounding_box','top5_areas_by_crimes_a','top5_areas_by_crimes_b'].includes(selectedQuery)) {//add date range
                     startDateFilter.classList.remove('hidden');
                     endDateFilter.classList.remove('hidden');
                 }else{
