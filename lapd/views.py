@@ -120,21 +120,6 @@ def crime_database_view(request):
         with connection.cursor() as cursor:
             cursor.execute(query, [start_date, end_date])
             table_data = cursor.fetchall()
-    elif query_type =='common_crmcd_in_bounding_box':
-        query = """
-            SELECT c."Crime Code", COUNT(*) AS crime_count
-            FROM "Cases" AS c
-            JOIN "LOCATION" AS l ON c."DR_NO" = l."DR_NO" 
-            WHERE l."Lat" BETWEEN %s AND %s  
-              AND l."Long" BETWEEN %s AND %s 
-              AND c."DATE OCC" = %s
-            GROUP BY c."Crime Code"
-            ORDER BY crime_count DESC
-            LIMIT 1;
-        """
-        table_headers = ['Crime Code', 'Crime Count']
-        with connection.cursor() as cursor:
-            cursor.execute(query, [lat_min, lat_max, lng_min, lng_max,start_date])
     elif query_type == 'top5_areas_by_crimes_a':
         query = """
         SELECT "Area_Name",COUNT(*) AS TotalCrime
@@ -284,8 +269,9 @@ def crime_database_view(request):
         SELECT
           mg.AreaName,
           mg.MaxTimeDifference,
-          tg."Date_Occ" AS StartDate,
-          tg.PreviousDate AS EndDate
+          tg.PreviousDate AS StartDate,
+          tg."Date_Occ" AS EndDate
+          
         FROM MaxGaps mg
         JOIN TimeGaps tg ON mg.AreaName = tg.AreaName AND mg.MaxTimeDifference = tg.TimeDifference
         ORDER BY mg.MaxTimeDifference DESC
@@ -371,6 +357,33 @@ def crime_database_view(request):
         table_headers = ['dr_no','Area_Name','Description','Weapon']
         with connection.cursor() as cursor:
             cursor.execute(query, [start_date,end_date,n])
+            table_data = cursor.fetchall()
+    elif query_type == 'common_crmcd_in_bounding_box':
+        query = """
+                SELECT cc."Crime_Code", COUNT(*) AS crime_count
+        FROM "Cases" c
+        JOIN "Cases_Crime_Codes" ccc ON c.dr_no = ccc."DR_NO_id"
+        JOIN "Crimes_Codes" cc ON ccc."CrimeCode_id" = cc."Crime_Code"
+        WHERE
+            c."Date_Occ" = %s -- Replace with your specific date
+            AND CAST(
+                CONCAT(
+                    LEFT(REPLACE(c.lat, '.', ''), 2), '.', SUBSTRING(REPLACE(c.lat, '.', ''), 3)
+                ) AS FLOAT
+            ) BETWEEN %s AND %s -- Correct bounding box for latitude
+            AND CAST(
+                CONCAT(
+                    LEFT(REPLACE(c.long, '.', ''), 4), '.', SUBSTRING(REPLACE(c.long, '.', ''), 5)
+                ) AS FLOAT
+            ) BETWEEN %s AND %s -- Correct bounding box for longitude
+        GROUP BY cc."Crime_Code"
+        ORDER BY crime_count DESC
+        LIMIT 1
+
+        """
+        table_headers=['Crime Code','Crime Count']
+        with connection.cursor() as cursor:
+            cursor.execute(query, [start_date,lat_min,lat_max,lng_min,lng_max])
             table_data = cursor.fetchall()
 
     return render(request, 'Base.html', {
