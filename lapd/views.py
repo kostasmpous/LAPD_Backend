@@ -70,6 +70,12 @@ def create_case(request):
             # Save the victims and associate them with the case
             victims = victim_formset.save(commit=False)
             for victim in victims:
+                if not victim.victim_id:
+                    # Assign the next available victim_id
+                    last_victim = Victims.objects.order_by('-victim_id').first()
+                    next_victim_id = (last_victim.victim_id + 1) if last_victim else 1
+                    victim.victim_id = next_victim_id
+
                 victim.save()
                 case.victims.add(victim)
 

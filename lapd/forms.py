@@ -68,6 +68,7 @@ CasesWeaponsFormSet = modelformset_factory(
 )
 
 class CasesCrimeCodesForm(forms.ModelForm):
+
     crime_code = forms.ModelChoiceField(
         queryset=CrimesCodes.objects.all(),
         label="Crime Code",
