@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include 'base/css.html' %}
+    <title>Crime Database</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    {% include 'base/js.html' %}
+    {% include 'nav/navbar.html' %}
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+
+ {% block content %}
+<div class="container mx-auto px-4 py-6">
+    <h2 class="text-2xl font-semibold text-gray-700 mb-6">Create a New Case</h2>
+
+    <form method="post" class="bg-white p-6 rounded shadow-md">
+        {% csrf_token %}
+
+        <!-- Case Details -->
+        <h3 class="text-xl font-semibold mb-4">Case Details</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {% for field in case_form %}
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-bold mb-2">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+             <!-- MO Codes Dual Listbox -->
+        <h3 class="text-xl font-semibold mb-4">MO Codes</h3>
+        <div class="flex gap-6 mb-8">
+            <!-- Available MO Codes -->
+            <div class="w-1/2">
+                <label class="block text-gray-700 font-bold mb-2">Available MO Codes</label>
+                <select id="available-mo-codes" multiple class="w-full h-64 border border-gray-300 rounded">
+                    {% for mo_code in case_form.fields.mo_codes.queryset %}
+                        <option value="{{ mo_code.pk }}">{{ mo_code }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col justify-center gap-4">
+                <button type="button" id="add-mo-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    ➔
+                </button>
+                <button type="button" id="remove-mo-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    ⬅
+                </button>
+            </div>
+
+            <!-- Selected MO Codes -->
+            <div class="w-1/2">
+                <label class="block text-gray-700 font-bold mb-2">Selected MO Codes</label>
+                <select id="selected-mo-codes" name="mo_codes" multiple class="w-full h-64 border border-gray-300 rounded">
+                </select>
+            </div>
+        </div>
+        <!-- Victim Details -->
+        <h3 class="text-xl font-semibold mb-4">Victim Details</h3>
+        {{ victim_formset.management_form }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {% for form in victim_formset %}
+                <div class="p-4 border border-gray-200 rounded mb-4">
+                    {% for field in form %}
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Crime Codes with Levels -->
+        <h3 class="text-xl font-semibold mb-4">Crime Codes with Levels</h3>
+        {{ crime_formset.management_form }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {% for form in crime_formset %}
+                <div class="p-4 border border-gray-200 rounded mb-4">
+                    {% for field in form %}
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Weapons Used -->
+        <h3 class="text-xl font-semibold mb-4">Weapons Used</h3>
+        {{ weapon_formset.management_form }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {% for form in weapon_formset %}
+                <div class="p-4 border border-gray-200 rounded mb-4">
+                    {% for field in form %}
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-bold mb-2">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            Submit
+        </button>
+    </form>
+</div>
+     
+ <!-- JavaScript for Dual Listbox -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const availableMoCodes = document.getElementById('available-mo-codes');
+        const selectedMoCodes = document.getElementById('selected-mo-codes');
+        const addMoBtn = document.getElementById('add-mo-btn');
+        const removeMoBtn = document.getElementById('remove-mo-btn');
+
+        // Move selected options from one list to another
+        function moveOptions(fromSelect, toSelect) {
+            Array.from(fromSelect.selectedOptions).forEach(option => {
+                toSelect.appendChild(option);
+            });
+        }
+
+        // Add button click event
+        addMoBtn.addEventListener('click', function () {
+            moveOptions(availableMoCodes, selectedMoCodes);
+        });
+
+        // Remove button click event
+        removeMoBtn.addEventListener('click', function () {
+            moveOptions(selectedMoCodes, availableMoCodes);
+        });
+    });
+</script>    
+{% endblock %}
+
+    </main>
+</body>
+</html>

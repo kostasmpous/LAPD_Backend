@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include 'base/css.html' %}
+    <title>Crime Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    {% include 'base/js.html' %}
+    {% include 'nav/navbar.html' %}
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <h2 class="text-2xl font-semibold text-gray-700 mb-6">Crime Records</h2>
+
+        <!-- Query Selection Menu -->
+        <form method="get" class="flex flex-wrap gap-4 mb-8">
+            <!-- Area Code Filter -->
+            <select name="area_name" id="area_name"
+                    class="border border-gray-300 px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Crime Codes</option>
+                {% for name in area_names %}
+                    <option value="{{ name }}" {% if request.GET.area_names == name %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Submit Button -->
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Run Query</button>
+        </form>
+
+        <!-- Results Table -->
+        <div class="overflow-x-auto bg-white shadow-md rounded">
+            <table class="min-w-full bg-white border border-gray-200">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                        {% for header in table_headers %}
+                            <th class="py-3 px-6 text-left">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-sm font-light">
+                    {% for row in table_data %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            {% for cell in row %}
+                                <td class="py-3 px-6 text-left whitespace-nowrap">{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="{{ table_headers|length }}" class="py-3 px-6 text-center">No data found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

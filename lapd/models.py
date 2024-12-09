@@ -15,6 +15,8 @@ class Areas(models.Model):
     area_code = models.SmallIntegerField(db_column='Area_Code', primary_key=True)  # Field name made lowercase.
     area_name = models.CharField(db_column='Area_Name', blank=True, null=True)  # Field name made lowercase.
 
+    def __str__(self):
+        return self.area_name if self.area_name else f"Area {self.area_code}"
     class Meta:
         
         db_table = 'Areas'
@@ -24,6 +26,8 @@ class Areas(models.Model):
 class CaseStatus(models.Model):
     status_code = models.CharField(db_column='Status_code', primary_key=True, max_length=4)  # Field name made lowercase.
     description = models.CharField(db_column='Description', max_length=255, blank=True, null=True)  # Field name made lowercase.
+    def __str__(self):
+        return self.description if self.description else f"Status {self.status_code}"
 
     class Meta:
         db_table = 'Case_Status'
@@ -32,6 +36,8 @@ class CrimesCodes(models.Model):
     crime_code = models.CharField(db_column='Crime_Code', primary_key=True)  # Field name made lowercase.
     description = models.CharField(db_column='Description', blank=True, null=True)  # Field name made lowercase.
 
+    def __str__(self):
+        return f"{self.crime_code} - {self.description}"
     class Meta:
         db_table = 'Crimes_Codes'
 
@@ -39,6 +45,9 @@ class CrimesCodes(models.Model):
 class MoCodes(models.Model):
     mo_code = models.CharField(db_column='MO_Code', primary_key=True)  # Field name made lowercase.
     description = models.CharField(db_column='Description', blank=True, null=True)  # Field name made lowercase.
+
+    def __str__(self):
+        return f"{self.mo_code} - {self.description}" if self.description else f"{self.mo_code}"
 
     class Meta:
         
@@ -49,6 +58,8 @@ class Premises(models.Model):
     premis_cd = models.SmallIntegerField(db_column='Premis_Cd', primary_key=True)  # Field name made lowercase.
     premis_desc = models.CharField(db_column='Premis_Desc', blank=True, null=True)  # Field name made lowercase.
 
+    def __str__(self):
+        return self.premis_desc if self.premis_desc else f"Premises {self.premis_cd}"
     class Meta:
         
         db_table = 'Premises'
@@ -58,6 +69,8 @@ class VictimDescent(models.Model):
     descent_code = models.CharField(db_column='Descent_Code', primary_key=True)  # Field name made lowercase. This field type is a guess.
     description = models.CharField(db_column='Description', blank=True, null=True)  # Field name made lowercase.
 
+    def __str__(self):
+        return f"{self.descent_code} - {self.description}"
     class Meta:
         
         db_table = 'Victim Descent'
@@ -78,6 +91,9 @@ class Victims(models.Model):
 class Weapons(models.Model):
     weapon_cd = models.CharField(primary_key=True, max_length=4)
     weapon_description = models.CharField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.weapon_cd} - {self.weapon_description}" if self.weapon_description else f"{self.weapon_cd}"
 
     class Meta:
         

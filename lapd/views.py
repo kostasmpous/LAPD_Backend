@@ -1,11 +1,12 @@
 from django.db import connection
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.db.models import Max
 
-from lapd.forms import CrimeReportFilterForm
-from lapd.models import CrimesCodes
+from lapd.forms import CrimeReportFilterForm, CaseForm, VictimFormSet, CasesCrimeCodesFormSet, CasesWeaponsFormSet
+from lapd.models import CrimesCodes, Areas, Victims, CasesCrimeCodes, Cases
 
 
 @login_required(login_url='login')
@@ -14,7 +15,7 @@ def home_page_view(request,*args,**kwargs):
     my_context = {
         "page_title": my_title,
     }
-    html_template = "Home.html"
+    html_template = "LandingPage.html"
     return render(request,html_template,my_context)
 
 VALID_CODE= "abc123"
@@ -30,6 +31,74 @@ def pw_protected_view(request,*args,**kwargs):
 
 from django.db import connection
 from django.shortcuts import render
+
+def search_crime(request):
+    area_name = request.GET.get('area_name','')
+    area_names = Areas.objects.values_list('area_name', flat=True).distinct()
+
+    table_headers=[]
+    table_data=[]
+
+    query = """
+    SELECT date_rptd,dr_no,location,time_occ,"Date_Occ",premis_cd,"Status_Code"
+    FROM "Cases" JOIN public."Areas" A on "Cases"."Area_code" = A."Area_Code"
+    WHERE A."Area_Name" = %s
+    """
+    table_headers = ['Date Reported', 'DR_NO', 'Location','Time Occurred','Date Occurred','Premise Code','Status Code']
+    with connection.cursor() as cursor:
+        cursor.execute(query, [area_name])
+        table_data = cursor.fetchall()
+    return render(request, 'SearchCrime.html', {
+        'table_headers': table_headers,
+        'table_data': table_data,
+        "area_names": area_names
+    })
+
+
+def create_case(request):
+    if request.method == 'POST':
+        case_form = CaseForm(request.POST)
+        victim_formset = VictimFormSet(request.POST)
+        crime_formset = CasesCrimeCodesFormSet(request.POST, queryset=CasesCrimeCodes.objects.none())
+        weapon_formset = CasesWeaponsFormSet(request.POST, queryset=Cases.weapons.through.objects.none())
+
+        if case_form.is_valid() and victim_formset.is_valid() and crime_formset.is_valid() and weapon_formset.is_valid():
+            # Save the case
+            case = case_form.save()
+            mo_codes = case_form.cleaned_data['mo_codes']
+            case.mocodes.set(mo_codes)
+            # Save the victims and associate them with the case
+            victims = victim_formset.save(commit=False)
+            for victim in victims:
+                victim.save()
+                case.victims.add(victim)
+
+            # Save the crime codes with levels and associate them with the case
+            crimes = crime_formset.save(commit=False)
+            for crime in crimes:
+                crime.DR_NO = case
+                crime.save()
+
+            # Save the weapons and associate them with the case
+            weapons = weapon_formset.save(commit=False)
+            for weapon in weapons:
+                weapon.cases = case
+                weapon.save()
+
+            return redirect('case_list')  # Redirect to a success page or list view
+    else:
+        case_form = CaseForm()
+        victim_formset = VictimFormSet(queryset=Victims.objects.none())
+        crime_formset = CasesCrimeCodesFormSet(queryset=CasesCrimeCodes.objects.none())
+        weapon_formset = CasesWeaponsFormSet(queryset=Cases.weapons.through.objects.none())
+
+    return render(request, 'NewCase.html', {
+        'case_form': case_form,
+        'victim_formset': victim_formset,
+        'crime_formset': crime_formset,
+        'weapon_formset': weapon_formset,
+    })
+
 
 def crime_database_view(request):
     query_type = request.GET.get('query_type', 'crime_report')
