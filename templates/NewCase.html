@@ -17,6 +17,19 @@
     <main class="container mx-auto px-4 py-6">
 
  {% block content %}
+             <!-- Success Message Popup -->
+        {% if messages %}
+            {% for message in messages %}
+                <div id="success-popup" class="fixed top-4 right-4 bg-green-500 text-white py-2 px-4 rounded shadow-lg">
+                    {{ message }}
+                </div>
+                <script>
+                    setTimeout(function() {
+                        document.getElementById('success-popup').style.display = 'none';
+                    }, 3000);  // Hide the popup after 3 seconds
+                </script>
+            {% endfor %}
+        {% endif %}
 <div class="container mx-auto px-4 py-6">
     <h2 class="text-2xl font-semibold text-gray-700 mb-6">Create a New Case</h2>
 
@@ -86,23 +99,23 @@
         </div>
 
         <!-- Crime Codes with Levels -->
-        <h3 class="text-xl font-semibold mb-4">Crime Codes with Levels</h3>
-        {{ crime_formset.management_form }}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {% for form in crime_formset %}
-                <div class="p-4 border border-gray-200 rounded mb-4">
-                    {% for field in form %}
-                        <div class="mb-4">
-                            <label class="block text-gray-700 font-bold mb-2">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endfor %}
-        </div>
+          <h2 class="text-xl font-semibold mb-4">Crime Codes</h2>
+            {{ crime_formset.management_form }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                {% for form in crime_formset %}
+                    <div class="p-4 border border-gray-200 rounded mb-4">
+                        {% for field in form %}
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-bold mb-2">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <p class="text-red-500 text-sm mt-1">{{ field.errors }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
 
         <!-- Weapons Used -->
         <h3 class="text-xl font-semibold mb-4">Weapons Used</h3>

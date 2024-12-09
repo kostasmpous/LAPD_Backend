@@ -1,4 +1,6 @@
+from django.contrib import messages
 from django.db import connection
+from django.forms import inlineformset_factory
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -82,14 +84,18 @@ def create_case(request):
             # Save the crime codes with levels and associate them with the case
             crimes = crime_formset.save(commit=False)
             for crime in crimes:
-                crime.DR_NO = case
-                crime.save()
-
+                if crime.CrimeLevel is not None:
+                    crime.DR_NO = case
+                    crime.save()
+                else:
+                    print("discard crime code")
             # Save the weapons and associate them with the case
             weapons = weapon_formset.save(commit=False)
             for weapon in weapons:
                 weapon.cases = case
                 weapon.save()
+
+            messages.success(request, 'Case created successfully!')
 
             return redirect('case_list')  # Redirect to a success page or list view
     else:

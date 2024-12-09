@@ -50,6 +50,25 @@ class CaseForm(forms.ModelForm):
             'long': forms.TextInput(attrs={'placeholder': 'Longitude'}),
         }
 
+class VictimForm(forms.ModelForm):
+    class Meta:
+        descent_code = forms.ModelChoiceField(
+            queryset=VictimDescent.objects.all(),
+            empty_label="Select Descent Code",
+            widget=forms.Select(attrs={
+                'class': 'border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'})
+        )
+
+        model = Victims
+        fields = [ 'age', 'sex', 'descent_code']
+        widgets = {
+            'age': forms.NumberInput(attrs={'placeholder': 'Age'}),
+            'sex': forms.TextInput(attrs={'placeholder': 'Sex'}),
+        }
+
+VictimFormSet = modelformset_factory(Victims, form=VictimForm, extra=1)
+
+
 class CasesWeaponsForm(forms.ModelForm):
     weapon = forms.ModelChoiceField(
         queryset=Weapons.objects.all(),
@@ -62,7 +81,7 @@ class CasesWeaponsForm(forms.ModelForm):
         fields = ['weapon']
 
 CasesWeaponsFormSet = modelformset_factory(
-    Cases.weapons.through,
+    Weapons,
     form=CasesWeaponsForm,
     extra=1,  # Number of empty forms to display by default
 )
@@ -83,30 +102,9 @@ class CasesCrimeCodesForm(forms.ModelForm):
         model = CasesCrimeCodes
         fields = ['crime_code', 'crime_level']
 
-
-CasesCrimeCodesFormSet = inlineformset_factory(
-    parent_model=Cases,
-    model=CasesCrimeCodes,
-    form=CasesCrimeCodesForm,
+CasesCrimeCodesFormSet = modelformset_factory(
+    CasesCrimeCodes,
+    form = CasesCrimeCodesForm,
     extra=3,  # Display 3 empty forms by default (you can adjust this number)
-    can_delete=False  # Allow deleting crime codes if needed
 )
 
-
-class VictimForm(forms.ModelForm):
-    class Meta:
-        descent_code = forms.ModelChoiceField(
-            queryset=VictimDescent.objects.all(),
-            empty_label="Select Descent Code",
-            widget=forms.Select(attrs={
-                'class': 'border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500'})
-        )
-
-        model = Victims
-        fields = [ 'age', 'sex', 'descent_code']
-        widgets = {
-            'age': forms.NumberInput(attrs={'placeholder': 'Age'}),
-            'sex': forms.TextInput(attrs={'placeholder': 'Sex'}),
-        }
-
-VictimFormSet = modelformset_factory(Victims, form=VictimForm, extra=1)

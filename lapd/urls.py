@@ -35,4 +35,6 @@ urlpatterns=[
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),  # new
 
+    path('cases/', create_case, name='case_list'),
+
 ]
