@@ -1,6 +1,7 @@
 # 🚔 LAPD Crime Database Project
 
 This Project was made for the M134 - Database Management Systems programming assigment 1, during the Fall semester 2024.
+
 Welcome to the LAPD Crime Database project! This web application is designed to manage and analyze crime reports for the LAPD.
 It provides functionalities to create, search crime data efficiently. 
 The application is built using Django and leverages TailwindCSS for modern UI styling.
@@ -12,7 +13,6 @@ The application is built using Django and leverages TailwindCSS for modern UI st
 * Database Models
 
 ##  ✨Features
-* Create Crime Reports: Add new crime cases with associated victims, crime codes, weapons, and MO codes.
 * Search Crimes: Search and filter crime data by various parameters (date, area, crime code, etc.).
 * User Authentication: Secure login and user management via Django's authentication system.
 * Dynamic Forms: Use formsets to add multiple victims, crime codes, and weapons to a case.
